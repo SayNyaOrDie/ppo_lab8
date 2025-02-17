@@ -60,22 +60,27 @@ class AccountController(
     }
 
 //    Перевод между аккаунтами двух РАЗНЫХ пользователей
-    @PostMapping("/{accountFromId}/transfer")
+    @PostMapping("/{sourceAccountId}/bankAccount/{sourceBankAccountId}/transfer")
     fun transferToAccount(
-        @PathVariable accountFromId: UUID,
-        @RequestParam accountToId: UUID,
-        @RequestParam amount: BigDecimal
+    @PathVariable sourceAccountId: UUID,
+    @PathVariable sourceBankAccountId: UUID,
+    @RequestParam destinationAccountId: UUID,
+    @RequestParam destinationBankAccountId: UUID,
+    @RequestParam transferAmount: BigDecimal
     ): TransferTransactionCreatedEvent {
-        val accountFrom = accountEsService.getState(accountFromId)
-        val accountTo = accountEsService.getState(accountToId)
-
         val sagaContext = sagaManager
             .launchSaga(transferSagaName, "start processing")
             .sagaContext()
 //    в примере sagaContext без (), но у меня ругается
-//        return transferEsService.create(sagaContext) {
-//            it.initiateTransferTransaction(sagaContext.ctx[transferSagaName]!!.sagaInstanceId, accountFrom.accountId)
-//        }
-    return TODO();
+        return transferEsService.create(sagaContext) {
+            it.initiateTransferTransaction(
+                sagaContext.ctx[transferSagaName]!!.sagaInstanceId,
+                sourceAccountId,
+                sourceBankAccountId,
+                destinationAccountId,
+                destinationBankAccountId,
+                transferAmount
+            )
+        }
     }
 }
