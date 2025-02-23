@@ -60,6 +60,12 @@
         </dependency>
 
         <dependency>
+            <groupId>ru.quipy</groupId>
+            <artifactId>tiny-mongo-event-store-spring-boot-starter</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
             <groupId>org.awaitility</groupId>
             <artifactId>awaitility</artifactId>
             <version>${awaitility.version}</version>
