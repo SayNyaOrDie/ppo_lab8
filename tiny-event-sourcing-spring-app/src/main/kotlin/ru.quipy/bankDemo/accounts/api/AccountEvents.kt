@@ -15,6 +15,7 @@ const val TRANSFER_TRANSACTION_ACCEPTED = "TRANSFER_TRANSACTION_ACCEPTED"
 const val TRANSFER_TRANSACTION_DECLINED = "TRANSFER_TRANSACTION_DECLINED"
 const val TRANSFER_TRANSACTION_PROCESSED = "TRANSFER_TRANSACTION_PROCESSED"
 const val TRANSFER_TRANSACTION_ROLLBACKED = "TRANSFER_TRANSACTION_ROLLBACKED"
+const val TRANSFER_TRANSACTION_CANCELED = "TRANSFER_TRANSACTION_CANCELED"
 
 
 @DomainEvent(name = ACCOUNT_CREATED)
@@ -61,6 +62,7 @@ data class InternalAccountTransferEvent(
     name = INTERNAL_ACCOUNT_TRANSFER,
 )
 
+// подтверждено снятие средств с аккаунта
 @DomainEvent(name = TRANSFER_TRANSACTION_ACCEPTED)
 data class TransferTransactionAcceptedEvent(
     val accountId: UUID,
@@ -82,11 +84,14 @@ data class TransferTransactionDeclinedEvent(
     name = TRANSFER_TRANSACTION_DECLINED,
 )
 
+// проведено зачисление средств на аккаунт
 @DomainEvent(name = TRANSFER_TRANSACTION_PROCESSED)
 data class TransferTransactionProcessedEvent(
     val accountId: UUID,
     val bankAccountId: UUID,
     val transactionId: UUID,
+    val transferAmount: BigDecimal,
+    val isDeposit: Boolean
 ) : Event<AccountAggregate>(
     name = TRANSFER_TRANSACTION_PROCESSED,
 )
@@ -96,6 +101,17 @@ data class TransferTransactionRollbackedEvent(
     val accountId: UUID,
     val bankAccountId: UUID,
     val transactionId: UUID,
+    val reason: String,
 ) : Event<AccountAggregate>(
     name = TRANSFER_TRANSACTION_ROLLBACKED,
+)
+
+@DomainEvent(name = TRANSFER_TRANSACTION_CANCELED)
+data class TransferTransactionCanceledEvent(
+    val accountId: UUID,
+    val bankAccountId: UUID,
+    val transactionId: UUID,
+    val transferAmount: BigDecimal
+) : Event<AccountAggregate>(
+    name = TRANSFER_TRANSACTION_CANCELED
 )

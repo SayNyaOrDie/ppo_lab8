@@ -55,8 +55,9 @@ class Account : AggregateState<UUID, AccountAggregate> {
         val bankAccount = bankAccounts[bankAccountId]
             ?: throw IllegalArgumentException("No such account to transfer to: $bankAccountId")
 
+//        заменить на rollback
         if (bankAccount.balance + transferAmount > BigDecimal(10_000_000)) {
-            return TransferTransactionDeclinedEvent(
+            return TransferTransactionRollbackedEvent(
                 accountId = accountId,
                 bankAccountId = bankAccountId,
                 transactionId = transactionId,
@@ -65,7 +66,7 @@ class Account : AggregateState<UUID, AccountAggregate> {
         }
 
         if (bankAccounts.values.sumOf { it.balance } + transferAmount > BigDecimal(25_000_000)) {
-            return TransferTransactionDeclinedEvent(
+            return TransferTransactionRollbackedEvent(
                 accountId = accountId,
                 bankAccountId = bankAccountId,
                 transactionId = transactionId,
@@ -73,7 +74,7 @@ class Account : AggregateState<UUID, AccountAggregate> {
             )
         }
 
-        return TransferTransactionAcceptedEvent(
+        return TransferTransactionProcessedEvent(
             accountId = accountId,
             bankAccountId = bankAccountId,
             transactionId = transactionId,
@@ -123,29 +124,31 @@ class Account : AggregateState<UUID, AccountAggregate> {
         )
     }
 
-    fun processPendingTransaction(
-        bankAccountId: UUID,
-        transactionId: UUID,
-    ): TransferTransactionProcessedEvent {
-        val pendingTransaction = bankAccounts[bankAccountId]!!.pendingTransactions[transactionId]!!
-        // todo sukhoa validation
-        return TransferTransactionProcessedEvent(
-            this.accountId,
-            bankAccountId,
-            transactionId
-        )
-    }
+//    fun processPendingTransaction(
+//        bankAccountId: UUID,
+//        transactionId: UUID,
+//    ): TransferTransactionProcessedEvent {
+//        val pendingTransaction = bankAccounts[bankAccountId]!!.pendingTransactions[transactionId]!!
+//        // todo sukhoa validation
+//        return TransferTransactionProcessedEvent(
+//            this.accountId,
+//            bankAccountId,
+//            transactionId
+//        )
+//    }
 
-    fun rollbackPendingTransaction(
+    fun rollbackTransaction(
         bankAccountId: UUID,
         transactionId: UUID,
-    ): TransferTransactionRollbackedEvent {
-        val pendingTransaction = bankAccounts[bankAccountId]!!.pendingTransactions[transactionId]!!
+        transferAmount: BigDecimal
+    ): TransferTransactionCanceledEvent {
+//        val pendingTransaction = bankAccounts[bankAccountId]!!.pendingTransactions[transactionId]!!
         // todo sukhoa validation
-        return TransferTransactionRollbackedEvent(
+        return TransferTransactionCanceledEvent(
             this.accountId,
             bankAccountId,
-            transactionId
+            transactionId,
+            transferAmount
         )
     }
 
@@ -205,22 +208,16 @@ class Account : AggregateState<UUID, AccountAggregate> {
 
     @StateTransitionFunc
     fun acceptTransfer(event: TransferTransactionAcceptedEvent) {
-        bankAccounts[event.bankAccountId]!!.initiatePendingTransaction(
-            PendingTransaction(
-                event.transactionId,
-                event.transferAmount,
-                event.isDeposit
-            )
-        )
+        bankAccounts[event.bankAccountId]!!.withdraw(event.transferAmount)
     }
 
     @StateTransitionFunc
-    fun processTransaction(event: TransferTransactionProcessedEvent) =
-        bankAccounts[event.bankAccountId]!!.processPendingTransaction(event.transactionId)
+    fun processTransfer(event: TransferTransactionProcessedEvent) =
+        bankAccounts[event.bankAccountId]!!.deposit(event.transferAmount)
 
     @StateTransitionFunc
-    fun rollbackTransaction(event: TransferTransactionRollbackedEvent) =
-        bankAccounts[event.bankAccountId]!!.rollbackPendingTransaction(event.transactionId)
+    fun rollbackTransfer(event: TransferTransactionCanceledEvent) =
+        bankAccounts[event.bankAccountId]!!.deposit(event.transferAmount)
 
     @StateTransitionFunc
     fun externalAccountTransferDecline(event: TransferTransactionDeclinedEvent) = Unit
@@ -240,6 +237,7 @@ data class BankAccount(
         this.balance = this.balance.subtract(amount)
     }
 
+//    по идее вот это
     fun initiatePendingTransaction(pendingTransaction: PendingTransaction) {
         if (!pendingTransaction.isDeposit) {
             withdraw(pendingTransaction.transferAmountFrozen)

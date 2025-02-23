@@ -8,7 +8,7 @@ import java.util.*
 const val TRANSFER_TRANSACTION_CREATED = "TRANSFER_TRANSACTION_CREATED"
 const val TRANSFER_PARTICIPANT_ACCEPTED = "TRANSFER_PARTICIPANT_ACCEPTED"
 const val TRANSFER_CONFIRMED = "TRANSFER_CONFIRMED"
-const val TRANSFER_NOT_CONFIRMED = "TRANSFER_NOT_CONFIRMED"
+const val TRANSFER_DECLINED = "TRANSFER_DECLINED"
 const val TRANSFER_PARTICIPANT_COMMITTED = "TRANSFER_PARTICIPANT_COMMITTED"
 const val TRANSFER_SUCCEEDED = "TRANSFER_SUCCEEDED"
 const val TRANSFER_PARTICIPANT_ROLLBACKED = "TRANSFER_PARTICIPANT_ROLLBACKED"
@@ -43,19 +43,20 @@ data class TransactionConfirmedEvent(
     val sourceBankAccountId: UUID,
     val destinationAccountId: UUID,
     val destinationBankAccountId: UUID,
+    val transferAmount: BigDecimal,
 ) : Event<TransferTransactionAggregate>(
     name = TRANSFER_CONFIRMED,
 )
 
-@DomainEvent(name = TRANSFER_NOT_CONFIRMED)
-data class TransactionNotConfirmedEvent(
+@DomainEvent(name = TRANSFER_DECLINED)
+data class TransactionDeclinedEvent(
     val transferId: UUID,
     val sourceAccountId: UUID,
     val sourceBankAccountId: UUID,
     val destinationAccountId: UUID,
     val destinationBankAccountId: UUID,
 ) : Event<TransferTransactionAggregate>(
-    name = TRANSFER_NOT_CONFIRMED,
+    name = TRANSFER_DECLINED,
 )
 
 @DomainEvent(name = NOOP)
@@ -92,6 +93,8 @@ data class TransactionSucceededEvent(
 @DomainEvent(name = TRANSFER_FAILED)
 data class TransactionFailedEvent(
     val transferId: UUID,
+    val sourceBankAccountId: UUID,
+    val transferAmount: BigDecimal
 ) : Event<TransferTransactionAggregate>(
     name = TRANSFER_FAILED,
 )
