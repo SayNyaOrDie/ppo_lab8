@@ -13,6 +13,7 @@ import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.ContextConfiguration
 import ru.quipy.bankDemo.accounts.api.AccountAggregate
+import ru.quipy.bankDemo.accounts.controller.AccountController
 import ru.quipy.bankDemo.accounts.logic.Account
 import ru.quipy.bankDemo.transfers.api.TransferTransactionAggregate
 import ru.quipy.bankDemo.transfers.logic.TransferTransaction
@@ -20,6 +21,7 @@ import ru.quipy.bankDemo.transfers.projections.BankAccountCacheRepository
 import ru.quipy.bankDemo.transfers.service.TransactionService
 import ru.quipy.config.DockerPostgresDataSourceInitializer
 import ru.quipy.core.EventSourcingService
+//import ru.quipy.saga.SagaManager
 import java.math.BigDecimal
 import java.time.Duration
 import java.util.*
@@ -30,7 +32,9 @@ import java.util.*
     initializers = [DockerPostgresDataSourceInitializer::class])
 @EnableAutoConfiguration
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
-class TransferTransactionAggregateStateTest: BaseTest(testId) {
+class TransferTransactionAggregateStateTest(
+//    val sagaManager: SagaManager
+): BaseTest(testId) {
     companion object {
         private val testAccountId = UUID.fromString("b88f83bf-9a2a-4091-9cb3-3185f6f65a4b")
         private val testAccount2Id = UUID.fromString("1fccc03e-4ed3-47b7-8f76-8e62efb5e36e")
