@@ -1,11 +1,13 @@
 package ru.quipy.bankDemo.accounts.logic
 
 import ru.quipy.bankDemo.accounts.api.*
+import ru.quipy.bankDemo.transfers.api.TransferParticipantRollbackedEvent
 import ru.quipy.core.annotations.StateTransitionFunc
 import ru.quipy.domain.AggregateState
 import ru.quipy.domain.Event
 import java.math.BigDecimal
 import java.util.*
+import kotlin.reflect.typeOf
 
 // вопрос, что делать, если, скажем, обрабатываем какой-то ивент, понимаем, что агрегата, который нужно обновить не существует.
 // Может ли ивент (ошибка) существовать в отрыве от агрегата?
@@ -31,7 +33,7 @@ class Account : AggregateState<UUID, AccountAggregate> {
 
     fun deposit(toBankAccountId: UUID, amount: BigDecimal): BankAccountDepositEvent {
         val bankAccount = (bankAccounts[toBankAccountId]
-            ?: throw IllegalArgumentException("No such account to transfer to: $toBankAccountId"))
+            ?: throw IllegalArgumentException("No such account to transfer to: $toBankAccountId, ${bankAccounts[toBankAccountId]}"))
 
         if (bankAccount.balance + amount > BigDecimal(10_000_000))
             throw IllegalStateException("You can't store more than 10.000.000 on account ${bankAccount.id}")
@@ -221,6 +223,9 @@ class Account : AggregateState<UUID, AccountAggregate> {
 
     @StateTransitionFunc
     fun externalAccountTransferDecline(event: TransferTransactionDeclinedEvent) = Unit
+
+    @StateTransitionFunc
+    fun accountRollback(event: TransferTransactionRollbackedEvent) = Unit
 }
 
 
