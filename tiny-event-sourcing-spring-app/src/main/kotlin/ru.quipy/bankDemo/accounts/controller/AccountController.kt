@@ -25,10 +25,9 @@ import java.util.*
 class AccountController(
     val accountEsService: EventSourcingService<UUID, AccountAggregate, Account>,
     val transferEsService: EventSourcingService<UUID, TransferTransactionAggregate, TransferTransaction>,
-    val sagaManager: SagaManager
+    val sagaManager: SagaManager,
 ) {
     val transferSagaName = "TRANSFER_PROCESSING"
-
 
 //    holderId != accountId
 //    holder - пользователь системы
@@ -55,8 +54,8 @@ class AccountController(
     }
 
     @PostMapping("/{bankAccountId}/deposit")
-    fun deposit(@PathVariable bankAccountId: UUID, @RequestParam amount: BigDecimal): BankAccountDepositEvent {
-        return accountEsService.create { it.deposit(bankAccountId, amount) }
+    fun deposit(@PathVariable bankAccountId: UUID, @RequestParam accountId: UUID, @RequestParam amount: BigDecimal): BankAccountDepositEvent {
+        return accountEsService.update(accountId) { it.deposit(bankAccountId, amount) }
     }
 
 //    Перевод между аккаунтами двух РАЗНЫХ пользователей
@@ -71,10 +70,9 @@ class AccountController(
         val sagaContext = sagaManager
             .launchSaga(transferSagaName, "start processing")
             .sagaContext()
-//    в примере sagaContext без (), но у меня ругается
         return transferEsService.create(sagaContext) {
             it.initiateTransferTransaction(
-                sagaContext.ctx[transferSagaName]!!.sagaInstanceId,
+                sagaContext.ctx[transferSagaName]!!.sagaStepId,
                 sourceAccountId,
                 sourceBankAccountId,
                 destinationAccountId,

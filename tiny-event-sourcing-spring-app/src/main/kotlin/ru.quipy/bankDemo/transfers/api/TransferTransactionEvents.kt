@@ -31,6 +31,7 @@ data class TransferTransactionCreatedEvent(
 @DomainEvent(name = TRANSFER_PARTICIPANT_ACCEPTED)
 data class TransferParticipantAcceptedEvent(
     val transferId: UUID,
+    val participantAccountID: UUID,
     val participantBankAccountId: UUID,
 ) : Event<TransferTransactionAggregate>(
     name = TRANSFER_PARTICIPANT_ACCEPTED,
@@ -69,6 +70,7 @@ data class NoopEvent(
 @DomainEvent(name = TRANSFER_PARTICIPANT_COMMITTED)
 data class TransferParticipantCommittedEvent(
     val transferId: UUID,
+    val participantAccountId: UUID,
     val participantBankAccountId: UUID,
 ) : Event<TransferTransactionAggregate>(
     name = TRANSFER_PARTICIPANT_COMMITTED,
@@ -77,6 +79,7 @@ data class TransferParticipantCommittedEvent(
 @DomainEvent(name = TRANSFER_PARTICIPANT_ROLLBACKED)
 data class TransferParticipantRollbackedEvent(
     val transferId: UUID,
+    val participantAccountId: UUID,
     val participantBankAccountId: UUID,
 ) : Event<TransferTransactionAggregate>(
     name = TRANSFER_PARTICIPANT_ROLLBACKED,
@@ -93,6 +96,7 @@ data class TransactionSucceededEvent(
 @DomainEvent(name = TRANSFER_FAILED)
 data class TransactionFailedEvent(
     val transferId: UUID,
+    val sourceAccountId: UUID,
     val sourceBankAccountId: UUID,
     val transferAmount: BigDecimal
 ) : Event<TransferTransactionAggregate>(

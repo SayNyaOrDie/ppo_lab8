@@ -137,7 +137,7 @@ class TransferTransaction : AggregateState<UUID, TransferTransactionAggregate> {
             else -> throw IllegalStateException("Transaction $transferId. No such participant bank account: $bankAccountId")
         }
 
-        return TransactionFailedEvent(transferId, sourceParticipant.bankAccountId, transferAmount)
+        return TransactionFailedEvent(transferId, sourceParticipant.accountId, sourceParticipant.bankAccountId, transferAmount)
     }
 
     @StateTransitionFunc

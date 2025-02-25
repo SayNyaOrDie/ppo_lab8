@@ -33,7 +33,7 @@ class Account : AggregateState<UUID, AccountAggregate> {
 
     fun deposit(toBankAccountId: UUID, amount: BigDecimal): BankAccountDepositEvent {
         val bankAccount = (bankAccounts[toBankAccountId]
-            ?: throw IllegalArgumentException("No such account to transfer to: $toBankAccountId, ${bankAccounts[toBankAccountId]}"))
+            ?: throw IllegalArgumentException("No such account to transfer to: $toBankAccountId"))
 
         if (bankAccount.balance + amount > BigDecimal(10_000_000))
             throw IllegalStateException("You can't store more than 10.000.000 on account ${bankAccount.id}")

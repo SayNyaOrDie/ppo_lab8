@@ -35,7 +35,7 @@ class TransactionService(
             .sagaContext()
         return transactionEsService.create(sagaContext) {
             it.initiateTransferTransaction(
-                sagaContext.ctx[transferSagaName]!!.sagaInstanceId,
+                sagaContext.ctx[transferSagaName]!!.sagaStepId,
                 sourceAccountId = srcBankAccount.accountId,
                 sourceBankAccountId = srcBankAccount.bankAccountId,
                 destinationAccountId = dstBankAccount.accountId,
